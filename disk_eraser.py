@@ -24,7 +24,6 @@ try:
 
     lsblk = subprocess.Popen(['lsblk'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
-    print disks
     disks = set(re.findall('sd[a-z]', disks[0]))
     print("Found the following disks:")
     for disk in disks:
