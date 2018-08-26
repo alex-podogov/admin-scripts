@@ -5,7 +5,6 @@ import multiprocessing
 import sys
 import re
 import os
-import shlex
 
 
 def dcfldd(disk):
