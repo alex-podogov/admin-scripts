@@ -8,12 +8,15 @@ import os
 
 
 def dcfldd(disk):
-    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=1024 &&'\
-    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 &&'\
-    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024'.format(disk)
+    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=1024 > /dev/null &&'\
+    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 > /dev/null &&'\
+    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024 > /dev/null &'.format(disk)
 
-def call_eraser(cmd):
-    return subprocess.call([cmd], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+def call_eraser(cmd, parent_process_pipe):
+    process = subprocess.Popen([cmd], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = process.communicate()
+	parent_process_pipe.send([os.getpid(), process.returncode, stderr])
+	
 
 script_log = os.getcwd() + '/disk_eraser.log'
 
@@ -25,7 +28,7 @@ try:
     for disk in disks:
         print('/dev/' + disk)
     print("Building a list of dcfldd commands")
-    commands = map(dcfldd, disks)
+    commands = tuple(map(dcfldd, disks))
    
     results = []
    
@@ -33,21 +36,35 @@ try:
         run_process = 'y'
     else:
         run_process = input("Ready to erase all drives? There is no turning back! (y/n): ")
-
+		
     if run_process == 'n':
         print('Exiting')
         sys.exit(0)
     elif run_process == 'y': 
-        print("Building a process pool")
-        pool = multiprocessing.Pool(processes=len(commands))
-        eraser_pool = pool.map_async(call_eraser, commands, callback=results.append)
-        print("Running dcfldd commands...")
-        eraser_pool.wait()
+        print("Starting subprocesses")
+		procs = []
+		parent_pipe, child_pipe = multiprocessing.Pipe()
+		count = 1
+		for c in commands:
+		    proc = multiprocessing.Process(target=call_eraser, name="subprocess_{0}".format(len(commands) - len(commands) - count), args=(c, child_pipe))
+			count += 1
+		    procs.append(proc)
+			proc.start()
+		for p in procs:
+		    p.join()
+		child_processes = len(procs)
+		while child_processes > 0:
+		    response = parent_pipe.recv()
+			if len(response) > 0:
+			    results.append("PID: {0}, exit code {1}, sterr: {2}".format(response[0], response[1], response[2]))
+				child_processes -= 1
+			else: continue
+		
     else:
         print("Invalid input: Type 'y' or 'n'")
         sys.exit(1)
    
-except subprocess.CallProcessError as err:
+except subprocess.CalledProcessError as err:
     print("One of child processes failed:\n command: {0}\n return code: {1}\n output: {2}\n".format(err.cmd, err.returncode, err.output))
     sys.exit(1)
 
