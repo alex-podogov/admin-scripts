@@ -21,13 +21,19 @@ try:
 
    lsblk = subprocess.Popen(['lsblk'], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
    disks = lsblk.communicate()
-   disks = disks[0]
-   commands = map(dcfldd, set(re.findall('sd[a-z]', disks)))
-
+   disks = set(re.findall('sd[a-z]', disks[0]))
+   print("Found the following disks:")
+   for disk in disks:
+       print('/dev/' + disk)
+   print("Building a list of dcfldd commands")
+   commands = map(dcfldd, disks)
+   
    results = []
 
+   print("Building a process pool")
    pool = multiprocessing.Pool(processes=len(commands))
    eraser_pool = pool.map_async(call_eraser, commands, callback=results.append)
+   print("Running dcfldd commands...")
    eraser_pool.wait()
    
 except subprocess.CallProcessError as err:
@@ -35,6 +41,7 @@ except subprocess.CallProcessError as err:
    sys.exit(1)
 
 if len(results) > 0:
+    print("Writing log file...")
     f = open(script_log, 'w')
     for res in results:
 	    f.write(res + '\n')
