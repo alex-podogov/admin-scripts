@@ -55,10 +55,10 @@ try:
 		child_processes = len(procs)
 		while child_processes > 0:
 		    response = parent_pipe.recv()
-			if len(response) > 0:
-			    results.append("PID: {0}, exit code {1}, sterr: {2}".format(response[0], response[1], response[2]))
-				child_processes -= 1
-			else: continue
+		    if len(response) > 0:
+	                results.append("PID: {0}, exit code {1}, sterr: {2}".format(response[0], response[1], response[2]))
+			child_processes -= 1
+		    else: continue
 		
     else:
         print("Invalid input: Type 'y' or 'n'")
