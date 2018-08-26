@@ -1,10 +1,1 @@
-PID: 2142, exit code -11, sterr: dcfldd: unrecognized option &&
-
-PID: 2139, exit code -11, sterr: dcfldd: unrecognized option &&
-
-PID: 2140, exit code -11, sterr: dcfldd: unrecognized option &&
-
-PID: 2143, exit code -11, sterr: dcfldd: unrecognized option &&
-
-PID: 2141, exit code -11, sterr: dcfldd: unrecognized option &&
-
+PID: 3306, exit code 1
