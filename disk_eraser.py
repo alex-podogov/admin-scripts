@@ -14,7 +14,7 @@ def dcfldd(disk):
     'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024'.format(disk)
 
 def call_eraser(cmd, parent_process_pipe):
-    process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process.communicate()
     parent_process_pipe.send([os.getpid(), process.returncode, stderr])
 	
@@ -23,7 +23,7 @@ script_log = os.getcwd() + '/disk_eraser.log'
 
 try:
 
-    lsblk = subprocess.Popen(['lsblk'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    lsblk = subprocess.Popen('lsblk', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
     disks = set(re.findall('sd[a-z]', disks[0]))
     print("Found the following disks:")
