@@ -5,15 +5,16 @@ import multiprocessing
 import sys
 import re
 import os
+import shlex
 
 
 def dcfldd(disk):
-    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=1024 > /dev/null &&'\
-    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 > /dev/null &&'\
-    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024 > /dev/null &'.format(disk)
+    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=1024 && '\
+    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 && '\
+    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024'.format(disk)
 
 def call_eraser(cmd, parent_process_pipe):
-    process = subprocess.Popen([cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process.communicate()
     parent_process_pipe.send([os.getpid(), process.returncode, stderr])
 	
@@ -47,7 +48,7 @@ try:
 	parent_pipe, child_pipe = multiprocessing.Pipe()
 	count = 1
 	for c in commands:
-	    proc = multiprocessing.Process(target=call_eraser, name="subprocess_{0}".format(len(commands) - len(commands) - count), args=(c, child_pipe))
+            proc = multiprocessing.Process(target=call_eraser, name="subprocess_{0}_command: {1}".format(len(commands) - len(commands) + count, c), args=(c, child_pipe))
 	    count += 1
             procs.append(proc)
 	    proc.start()
