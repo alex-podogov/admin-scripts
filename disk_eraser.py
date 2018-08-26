@@ -13,7 +13,7 @@ def dcfldd(disk):
     'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024 > /dev/null &'.format(disk)
 
 def call_eraser(cmd, parent_process_pipe):
-    process = subprocess.Popen([cmd], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen([cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     parent_process_pipe.send([os.getpid(), process.returncode, stderr])
 	
@@ -22,8 +22,9 @@ script_log = os.getcwd() + '/disk_eraser.log'
 
 try:
 
-    lsblk = subprocess.Popen(['lsblk'], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    lsblk = subprocess.Popen(['lsblk'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
+    print disks
     disks = set(re.findall('sd[a-z]', disks[0]))
     print("Found the following disks:")
     for disk in disks:
@@ -36,7 +37,7 @@ try:
     if "-f" in sys.argv:
         run_process = 'y'
     else:
-        run_process = input("Ready to erase all disks? There is no turning back! (y/n): ")
+        run_process = str(raw_input("Ready to erase all disks? There is no turning back! (y/n): "))
 		
     if run_process == 'n':
         print('Exiting')
