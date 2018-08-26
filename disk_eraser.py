@@ -18,34 +18,46 @@ def call_eraser(cmd):
 script_log = os.getcwd() + '/disk_eraser.log'
 
 try:
-
-   lsblk = subprocess.Popen(['lsblk'], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-   disks = lsblk.communicate()
-   disks = set(re.findall('sd[a-z]', disks[0]))
-   print("Found the following disks:")
-   for disk in disks:
-       print('/dev/' + disk)
-   print("Building a list of dcfldd commands")
-   commands = map(dcfldd, disks)
+    lsblk = subprocess.Popen(['lsblk'], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    disks = lsblk.communicate()
+    disks = set(re.findall('sd[a-z]', disks[0]))
+    print("Found the following disks:")
+    for disk in disks:
+        print('/dev/' + disk)
+    print("Building a list of dcfldd commands")
+    commands = map(dcfldd, disks)
    
-   results = []
+    results = []
+   
+    if "-f" in sys.argv:
+        run_process = 'y'
+    else:
+        run_process = input("Ready to erase all drives? There is no turning back! (y/n): ")
 
-   print("Building a process pool")
-   pool = multiprocessing.Pool(processes=len(commands))
-   eraser_pool = pool.map_async(call_eraser, commands, callback=results.append)
-   print("Running dcfldd commands...")
-   eraser_pool.wait()
+    if run_process == 'n':
+        print('Exiting')
+        sys.exit(0)
+    elif run_process == 'y': 
+        print("Building a process pool")
+        pool = multiprocessing.Pool(processes=len(commands))
+        eraser_pool = pool.map_async(call_eraser, commands, callback=results.append)
+        print("Running dcfldd commands...")
+        eraser_pool.wait()
+    else:
+        print("Invalid input: Type 'y' or 'n'")
+        sys.exit(1)
    
 except subprocess.CallProcessError as err:
-   print("One of child processes failed:\n command: {0}\n return code: {1}\n output: {2}\n".format(err.cmd, err.returncode, err.output))
-   sys.exit(1)
+    print("One of child processes failed:\n command: {0}\n return code: {1}\n output: {2}\n".format(err.cmd, err.returncode, err.output))
+    sys.exit(1)
 
 if len(results) > 0:
     print("Writing log file...")
     f = open(script_log, 'w')
     for res in results:
-	    f.write(res + '\n')
-	f.close()
-   
+        f.write(res + '\n')
+    f.close()
+
+print("Finished. Exiting.")
 sys.exit(0)
 
