@@ -98,7 +98,6 @@ except subprocess.CalledProcessError as err:
 print("Checking results")
 if len(results) > 0:
     print("Writing log file...")
-    f = open(script_log, 'w')
     for res in results:
         log.write(res + '\n')
 log.close()
