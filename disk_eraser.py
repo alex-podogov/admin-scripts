@@ -20,7 +20,7 @@ def call_eraser(cmd, parent_process_pipe, my_name):
     stdout, stderr = process_ones.communicate()
     process_random = subprocess.Popen(cmd[2].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_random.communicate()
-    PID = os.getpid()
+    PID = str(os.getpid())
     codes = "writing zeros: {0}; writing_ones: {1}; writing random: {2}".format(process_zeros.returncode, process_ones.returncode, process_random.returncode)
     message = [PID, my_name, codes, ' && '.join(cmd)]
     message = message if len(message) > 0 else ["No information"]
@@ -75,7 +75,7 @@ try:
         print("Monitoring child processes")
 	while len(procs) > 0:
             response = parent_pipe.recv()
-	    if len(response) == 3:
+	    if len(response) == 4:
                 results.append("PID: {0}, exit code {1}, process name: {2}, command: {3}".format(response[0], response[2], response[1], response[3]))
                 processes_returned_message.append(response[1])
             elif len(response) > 0:
