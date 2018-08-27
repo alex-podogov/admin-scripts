@@ -71,7 +71,7 @@ try:
             elif limit == 0:
                 break
             proc_name = "subprocess_{0}".format(len(commands) - len(commands) + count)
-            proc = multiprocessing.Process(target=call_eraser, name=proc_name, args=(c, child_pipe, proc_name))
+            proc = multiprocessing.Process(target=call_eraser, name=proc_name, args=(c, child_pipe, proc_name, log))
 	    count += 1
             procs.append(proc)
 	    proc.start()
