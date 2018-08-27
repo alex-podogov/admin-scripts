@@ -12,14 +12,17 @@ def dcfldd(disk):
     'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 && '\
     'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024'.format(disk)
 
-def call_eraser(cmd, parent_process_pipe, my_name):
+def call_eraser(cmd, parent_process_pipe, my_name, log_file):
     cmd = cmd.split('&&')
     process_zeros = subprocess.Popen(cmd[0].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_zeros.communicate()
+    log_file.write("Process name: {0}; Finished writing zeros\n".format(my_name))
     process_ones = subprocess.Popen(cmd[1].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_ones.communicate()
+    log_file.write("Process name: {0}; Finished writing ones\n".format(my_name))
     process_random = subprocess.Popen(cmd[2].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_random.communicate()
+    log_file.write("Process name: {0}; Finished writing random\n".format(my_name))
     PID = str(os.getpid())
     codes = "writing zeros: {0}; writing_ones: {1}; writing random: {2}".format(process_zeros.returncode, process_ones.returncode, process_random.returncode)
     message = [PID, my_name, codes, ' && '.join(cmd)]
@@ -29,6 +32,7 @@ def call_eraser(cmd, parent_process_pipe, my_name):
 
 
 script_log = os.getcwd() + '/disk_eraser.log'
+log = open(script_log, 'w')
 
 try:
 
@@ -96,8 +100,8 @@ if len(results) > 0:
     print("Writing log file...")
     f = open(script_log, 'w')
     for res in results:
-        f.write(res + '\n')
-    f.close()
+        log.write(res + '\n')
+log.close()
 
 print("Finished. Exiting.")
 sys.exit(0)

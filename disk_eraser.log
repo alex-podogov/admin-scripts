@@ -1,1 +1,2 @@
-PID: 3306, exit code 1
+PID: 1876, exit code writing zeros: 1; writing_ones: 1; writing random: 1, process name: subprocess_1, command: dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/sda bs=1024  &&  dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/sda bs=1024  &&  dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/sda bs=1024
+PID: 1877, exit code writing zeros: 1; writing_ones: 1; writing random: 1, process name: subprocess_2, command: dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/sdb bs=1024  &&  dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/sdb bs=1024  &&  dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/sdb bs=1024
