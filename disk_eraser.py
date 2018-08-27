@@ -8,9 +8,9 @@ import os
 
 
 def dcfldd(disk):
-    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=1024 && '\
-    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=1024 && '\
-    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=1024'.format(disk)
+    return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=8192 conv=noerror && '\
+    'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=8192 conv=noerror && '\
+    'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=8192 conv=noerror'.format(disk)
 
 def call_eraser(cmd, parent_process_pipe, my_name, log_file):
     cmd = cmd.split('&&')
