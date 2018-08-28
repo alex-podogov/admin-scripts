@@ -16,13 +16,10 @@ def call_eraser(cmd, parent_process_pipe, my_name, log_file):
     cmd = cmd.split('&&')
     process_zeros = subprocess.Popen(cmd[0].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_zeros.communicate()
-    #log_file.write("Process name: {0}; Finished writing zeros\n".format(my_name))
     process_ones = subprocess.Popen(cmd[1].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_ones.communicate()
-    #log_file.write("Process name: {0}; Finished writing ones\n".format(my_name))
     process_random = subprocess.Popen(cmd[2].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_random.communicate()
-    #log_file.write("Process name: {0}; Finished writing random\n".format(my_name))
     PID = str(os.getpid())
     codes = "writing zeros: {0}; writing_ones: {1}; writing random: {2}".format(process_zeros.returncode, process_ones.returncode, process_random.returncode)
     message = [PID, my_name, codes, ' && '.join(cmd)]
@@ -38,11 +35,19 @@ try:
 
     lsblk = subprocess.Popen('lsblk', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
-    disks = list(set(re.findall('sd[a-z]', disks[0])))
+    disks = list(set(re.findall('[hs]d[a-z]', disks[0])))
     disks.sort()
     print("Found the following disks:")
     for disk in disks:
         print('/dev/' + disk)
+    ssd = []
+    for disk in disks:
+        determine_type = subprocess.Popen('cat /sys/block/{0}/queue/rotational'.format(disk), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	disk_type, err = determine_type.communicate()
+	if str(disk_type).strip() == '0':
+	    print('Disk {0} is an SSD and will be excluded from the list of disks being wiped'.format(disk))
+            ssd.append(disk)
+    disks = [d for d in disks if d not in ssd]
     print("Building a list of dcfldd commands")
     commands = map(dcfldd, disks)
    
