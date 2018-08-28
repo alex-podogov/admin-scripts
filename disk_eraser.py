@@ -7,6 +7,10 @@ import re
 import os
 
 
+'''
+In order to use this script, you should have a 'dcfldd' tool installed on the system where you are running it.
+'''
+
 # Prepare shell commands to wipe disks: this script makes use of a 'dcfldd', which is an enhanced version of a standard 'dd' tool.
 # It was developed for forensics needs.
 def dcfldd(disk):
