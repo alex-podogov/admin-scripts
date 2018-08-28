@@ -8,7 +8,15 @@ import os
 
 
 '''
+This script was created for Linux platforms, specifically for RHEL-based distributions.
 In order to use this script, you should have a 'dcfldd' tool installed on the system where you are running it.
+This script will detect SSD and exlude them from the list of drives to wipe, since to "wipe" an SSD you should
+use TRIM command after deleting files from the file system.
+Usage:
+Set 'exec' permission on the script first: chmod 755 disk_eraser.py
+"./disk_eraser.py -f" - use this to skip a prompt for confirmation and force wiping;
+"./disk_eraser.py -l 2" - use '-l' option to limit a number of disks to wipe (2 disks in this example);
+"./disk_eraser.py" - this will request a confirmation and will wipe all disks it can find.
 '''
 
 # Prepare shell commands to wipe disks: this script makes use of a 'dcfldd', which is an enhanced version of a standard 'dd' tool.
