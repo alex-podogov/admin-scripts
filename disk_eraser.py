@@ -16,7 +16,9 @@ Usage:
 Set 'exec' permission on the script first: chmod 755 disk_eraser.py
 "./disk_eraser.py -f" - use this to skip a prompt for confirmation and force wiping;
 "./disk_eraser.py -l 2" - use '-l' option to limit a number of disks to wipe (2 disks in this example);
-"./disk_eraser.py" - this will request a confirmation and will wipe all disks it can find.
+"./disk_eraser.py" - this will request a confirmation and will wipe all disks it can find;
+or it can be a combination of two options:
+"./disk_eraser.py -f -l 5"
 '''
 
 # Prepare shell commands to wipe disks: this script makes use of a 'dcfldd', which is an enhanced version of a standard 'dd' tool.
