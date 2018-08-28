@@ -7,12 +7,15 @@ import re
 import os
 
 
+# Prepare shell commands to wipe disks: this script makes use of a 'dcfldd', which is an enhanced version of a standard 'dd' tool.
+# It was developed for forensics needs.
 def dcfldd(disk):
     return 'dcfldd pattern=00 errlog=/tmp/dcfldd_write_zeros.log of=/dev/{0} bs=8192 conv=noerror && '\
     'dcfldd pattern=FF errlog=/tmp/dcfldd_write_ones.log of=/dev/{0} bs=8192 conv=noerror && '\
     'dcfldd errlog=/tmp/dcfldd_write_rand.log if=/dev/urandom of=/dev/{0} bs=8192 conv=noerror'.format(disk)
 
-def call_eraser(cmd, parent_process_pipe, my_name, log_file):
+# This function will spawn subprocesses running 'dcfldd'.
+def call_eraser(cmd, parent_process_pipe, my_name):
     cmd = cmd.split('&&')
     process_zeros = subprocess.Popen(cmd[0].strip(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process_zeros.communicate()
@@ -33,6 +36,7 @@ log = open(script_log, 'w')
 
 try:
 
+    # Open up a child-parent pipe which is used to exchange messages between the main script and its child processes.
     lsblk = subprocess.Popen('lsblk', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
     disks = list(set(re.findall('[hs]d[a-z]', disks[0])))
@@ -42,6 +46,7 @@ try:
         print('/dev/' + disk)
     ssd = []
     for disk in disks:
+	# Run a shell command to detect a disks' types and exclude SSD from the wiping process.
         determine_type = subprocess.Popen('cat /sys/block/{0}/queue/rotational'.format(disk), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	disk_type, err = determine_type.communicate()
 	if str(disk_type).strip() == '0':
@@ -70,19 +75,23 @@ try:
 	procs = []
 	parent_pipe, child_pipe = multiprocessing.Pipe()
 	count = 1
+	# Generate a list of subprocesses which will run instances of call_eraser function
 	for c in commands:
             if limit > 0:
                 limit -= 1
             elif limit == 0:
                 break
-            proc_name = "subprocess_{0}".format(len(commands) - len(commands) + count)
-            proc = multiprocessing.Process(target=call_eraser, name=proc_name, args=(c, child_pipe, proc_name, log))
+            proc_name = "subprocess_{0}".format(count)
+            proc = multiprocessing.Process(target=call_eraser, name=proc_name, args=(c, child_pipe, proc_name))
 	    count += 1
             procs.append(proc)
+	    # Start subprocesses
 	    proc.start()
+	# Child process monitoring cycle
         processes_returned_message = []
         print("Monitoring child processes")
 	while len(procs) > 0:
+	    # Listen for incoming messages from child processes
             response = parent_pipe.recv()
 	    if len(response) == 4:
                 results.append("PID: {0}, exit code {1}, process name: {2}, command: {3}".format(response[0], response[2], response[1], response[3]))
@@ -90,6 +99,7 @@ try:
             elif len(response) > 0:
                 results.append(' '.join(response))
             for p in procs:
+		# Check if a particular child process has terminated or returned a message already
                 if not p.is_alive() or p.name in processes_returned_message:
                     procs.pop(procs.index(p))
     else:
@@ -100,6 +110,7 @@ except subprocess.CalledProcessError as err:
     print("One of child processes failed:\n command: {0}\n return code: {1}\n output: {2}\n".format(err.cmd, err.returncode, err.output))
     sys.exit(1)
 
+# Write log file
 print("Checking results")
 if len(results) > 0:
     print("Writing log file...")
