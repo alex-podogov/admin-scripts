@@ -54,7 +54,7 @@ try:
     # Open up a child-parent pipe which is used to exchange messages between the main script and its child processes.
     lsblk = subprocess.Popen('lsblk', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     disks = lsblk.communicate()
-    disks = list(set(re.findall('[hs]d[a-z]', disks[0])))
+    disks = list(set(re.findall('[vhs]d[a-z]', disks[0])))
     disks.sort()
     print("Found the following disks:")
     for disk in disks:
@@ -62,7 +62,7 @@ try:
     ssd = []
     for disk in disks:
 	# Run a shell command to detect a disks' types and exclude SSD from the wiping process.
-        determine_type = subprocess.Popen('cat /sys/block/{0}/queue/rotational'.format(disk), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        determine_type = subprocess.Popen('cat /sys/block/{0}/queue/rotational'.format(disk), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 	disk_type, err = determine_type.communicate()
 	if str(disk_type).strip() == '0':
 	    print('Disk {0} is an SSD and will be excluded from the list of disks being wiped'.format(disk))
