@@ -570,7 +570,7 @@ pillar_roots:
 #  - cmd_yaml: cat /etc/salt/yaml
 
 ext_pillar:
-   - git: master https://github.com/alex-podogov/admin-scripts.git root=salt/pillar
+   - git: master ssh://git@github.com/alex-podogov/admin-scripts.git root=salt/pillar
 
 
 # The ext_pillar_first option allows for external pillar sources to populate
