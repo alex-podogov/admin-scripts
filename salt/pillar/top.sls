@@ -3,7 +3,7 @@ base:
         - secret
 dev:
     '*':
-        - secret
+        - access
 lab:
     '*':
-        - secret
+        - password
