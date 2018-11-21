@@ -1,6 +1,6 @@
 base:
     '*':
-        - secret
+        - comm.secret
 dev:
     '*':
         - env.dev.access
