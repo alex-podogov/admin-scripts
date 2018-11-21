@@ -1,6 +1,6 @@
 #!yaml|gpg
 
-secret:
+password:
     user: |
         -----BEGIN PGP MESSAGE-----
         Version: GnuPG v2.0.22 (GNU/Linux)
