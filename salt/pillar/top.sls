@@ -3,7 +3,7 @@ base:
         - secret
 dev:
     '*':
-        - access
+        - env.dev.access
 lab:
     '*':
-        - password
+        - env.lab.password
